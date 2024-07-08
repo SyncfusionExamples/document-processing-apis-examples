@@ -4,12 +4,13 @@ using System.IO;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Cryptography;
 using Microsoft.IdentityModel.Tokens;
+using System.Net.Http.Headers;
 
 
 string token = GenerateToken();
 Console.WriteLine("Generated JWT Token:");
 Console.WriteLine(token);
-ValidateToken(token);
+await ValidateToken(token);
 
 //Generate Token
 static string GenerateToken()
@@ -32,11 +33,11 @@ static string GenerateToken()
 }
 
 // Validate Token
-static async void ValidateToken(string token)
+static async Task ValidateToken(string token)
 {
     var client = new HttpClient();
     var request = new HttpRequestMessage(HttpMethod.Post, "http://localhost:8003/v1/conversion/word-to-pdf");
-    request.Headers.Add("Authentication", $"Bearer {token}");
+    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
     var content = new MultipartFormDataContent();
     content.Add(new StreamContent(File.OpenRead(@"../../../SalesInvoice.docx")), "file", "SalesInvoice.docx");
     content.Add(new StringContent("{\"File\": \"file\",\"Password\": null,\"PreserveFormFields\": true,\"PdfComplaince\": \"PDF/A-1B\",\"EnableAccessibility\": false}"), "settings");
